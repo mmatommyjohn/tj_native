@@ -19,6 +19,33 @@ const regions = [
   }
 ];
 
+const beaconsRegistry = [
+  {
+    uuid: "B9407F30-F5F8-466E-AFF9-25556B57FE6D",
+    major: 30684,
+    minor: 8638,
+    name: "muhammad yellow beacon",
+    imgUrl:
+      "https://img.buzzfeed.com/buzzfeed-static/static/2017-07/5/14/enhanced/buzzfeed-prod-fastlane-03/enhanced-17346-1499278727-21.jpg?downsize=715:*&output-format=auto&output-quality=auto"
+  },
+  {
+    uuid: "B9407F30-F5F8-466E-AFF9-25556B57FE6D",
+    major: 60742,
+    minor: 19571,
+    name: "muhammad purple beacon",
+    imgUrl:
+      "https://4fi8v2446i0sw2rpq2a3fg51-wpengine.netdna-ssl.com/wp-content/uploads/2016/06/KittenProgression-Darling-week6.jpg"
+  }
+];
+
+function filterWithRegistryData(beacon) {
+  return (
+    beaconsRegistry.filter(
+      b => b.major === beacon.major && b.minor === beacon.minor
+    ).length > 0
+  );
+}
+
 function mergeWithRegistryData(beacon) {
   return beaconsRegistry
     .filter(
@@ -30,17 +57,6 @@ function mergeWithRegistryData(beacon) {
     .reduce((acc, rBeacon) => ({ ...acc, ...rBeacon }), beacon);
 }
 
-const beaconsRegistry = [
-  {
-    uuid: "B9407F30-F5F8-466E-AFF9-25556B57FE6D",
-    major: 30684,
-    minor: 8638,
-    name: "muhammad beacon",
-    imgUrl:
-      "https://img.buzzfeed.com/buzzfeed-static/static/2017-07/5/14/enhanced/buzzfeed-prod-fastlane-03/enhanced-17346-1499278727-21.jpg?downsize=715:*&output-format=auto&output-quality=auto"
-  }
-];
-
 export default class TJBeacon extends Component {
   constructor(props) {
     super(props);
@@ -50,7 +66,7 @@ export default class TJBeacon extends Component {
     };
   }
   componentWillMount() {
-    console.log('compononte will mount');
+    console.log("compononte will mount");
     Beacons.requestWhenInUseAuthorization();
     console.log(navigator);
     console.log(regions);
@@ -83,7 +99,7 @@ export default class TJBeacon extends Component {
     Beacons.startUpdatingLocation();
   }
   componentDidMount() {
-    console.log('component did mount');
+    console.log("component did mount");
     this.beaconsDidRange = DeviceEventEmitter.addListener(
       "beaconsDidRange",
       ({ beacons }) => {
@@ -95,9 +111,17 @@ export default class TJBeacon extends Component {
 
   render() {
     const { beacons } = this.state;
-    console.log(beacons);
+    let nearOnes = beacons.filter(
+      b => b.proximity === "near" || b.proximity === "immediate"
+    );
+    console.log("near or immediate:", nearOnes);
     return (
-      <View>{beacons.map(mergeWithRegistryData).map(this.renderRow)}</View>
+      <View>
+        {nearOnes
+          .filter(filterWithRegistryData)
+          .map(mergeWithRegistryData)
+          .map(this.renderRow)}
+      </View>
     );
   }
 
